@@ -6,9 +6,10 @@ var cube = new RubiksCube();
 Canvas display = new Canvas(3 * 3 + 1, 4 * 3 + 1);
 
 AnsiConsole.MarkupLine("Informatik Projekt");
-AnsiConsole.MarkupLine("Mögliche moves: " + String.Join(", ", Enum.GetNames(typeof(RubiksMove)).Select(x => x.Replace('_', '\''))));
-AnsiConsole.MarkupLine("[purple]scramble[/] um den Zauberwürfel zufällig zu verdrehen");
-AnsiConsole.MarkupLine("[red]exit[/] um das Programm zu verlassen");
+AnsiConsole.MarkupLine("Mögliche moves: " + String.Join(", ", Enum.GetNames(typeof(RubiksMove)).Select(x => !x.Contains('_') ? x : x.Replace("_", "") + "'")));
+AnsiConsole.MarkupLine("Bei jedem Input können beliebig viele Moves angegeben werden (durch Leerzeichen getrennt) oder: ");
+AnsiConsole.MarkupLine(" - [purple]scramble[/] um den Zauberwürfel zufällig zu verdrehen");
+AnsiConsole.MarkupLine(" - [red]exit[/] um das Programm zu verlassen");
 AnsiConsole.WriteLine();
 AnsiConsole.WriteLine();
 AnsiConsole.WriteLine();
