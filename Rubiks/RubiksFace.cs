@@ -8,11 +8,11 @@ namespace Rubiks {
     public enum RubiksFace {
 
         FRONT = 1,
-        UP = 2,
+        RIGHT = 2,
         BACK = 3,
-        DOWN = 4,
-        LEFT = 5,
-        RIGHT = 6,
+        LEFT = 4,
+        DOWN = 5,
+        UP = 6,
 
     }
 }

@@ -51,4 +51,19 @@ namespace TensorCS.Core {
 
         internal override double SubtractT(double x, double y) => x - y;
     }
+
+    public class ByteTensor : BaseTensor<byte> {
+        public ByteTensor(Shape shape) : base(shape) { }
+        public ByteTensor(Shape shape, byte initialValue) : base(shape, initialValue) { }
+        public ByteTensor(Shape shape, byte[] values) : base(shape, values) { }
+
+
+        internal override byte AddT(byte x, byte y) => (byte)(x + y);
+
+        internal override byte DivideT(byte x, byte y) => (byte)(x / y);
+
+        internal override byte MultiplyT(byte x, byte y) => (byte)(x * y);
+
+        internal override byte SubtractT(byte x, byte y) => (byte)(x - y);
+    }
 }

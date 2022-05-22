@@ -112,6 +112,10 @@ namespace TensorCS.Core {
 
         #region Create
 
+        public BaseTensor<T> Clone() {
+            return this.Create(this.Shape, (T[])this._values.Clone());
+        }
+
         public BaseTensor<T> Create(Shape shape) {
             Type t = this.GetType();
 

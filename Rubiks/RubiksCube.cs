@@ -1,30 +1,139 @@
-﻿using TensorCS.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TensorCS.Core;
 
 namespace Rubiks {
     public class RubiksCube {
 
-        public const int RUBIK_FACES = 6;
+        //U Move Permutation
+        //          ┌──┬──┬──┐                          //          ┌──┬──┬──┐
+        //          │45│46│47│                          //          │51│48│45│ 
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤
+        //          │48│49│50│                          //          │52│49│46│
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤
+        //          │51│52│53│                          //          │53│50│47│
+        // ┌──┬──┬──┼──┼──┼──┼──┬──┬──┐                 // ┌──┬──┬──┼──┼──┼──┼──┬──┬──┐        
+        // │27│28│29│0 │1 │2 │9 │10│11│                 // │0 │1 │2 │9 │10│11│26│25│24│        
+        // ├──┼──┼──┼──┼──┼──┼──┼──┼──┤                 // ├──┼──┼──┼──┼──┼──┼──┼──┼──┤        
+        // │30│31│32│3 │4 |5 │12│13│14│                 // │30│31│32│3 │4 |5 │12│13│14│        
+        // ├──┼──┼──┼──┼──┼──┼──┼──┼──┤                 // ├──┼──┼──┼──┼──┼──┼──┼──┼──┤        
+        // │33│34│35│6 │7 │8 │15│16│17│                 // │33│34│35│6 │7 │8 │15│16│17│        
+        // └──┴──┴──┼──┼──┼──┼──┴──┴──┘                 // └──┴──┴──┼──┼──┼──┼──┴──┴──┘        
+        //          │36│37│38│                          //          │36│37│38│
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤
+        //          │39│40│41│                          //          │39│40│41│
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤
+        //          │42│43│44│                          //          │42│43│44│
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤
+        //          │18│19│20│                          //          │18│19│20│
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤
+        //          │21│22│23│                          //          │21│22│23│
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤
+        //          │24│25│26│                          //          │29│28│27│
+        //          └──┴──┴──┘                          //          └──┴──┴──┘
 
-        public IntTensor Cube { get; private set; }
+
+
+        //X Move Permutation
+        //          ┌──┬──┬──┐                          //          ┌──┬──┬──┐         
+        //          │45│46│47│                          //          │0 │1 │2 │         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤         
+        //          │48│49│50│                          //          │3 │4 │5 │         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤         
+        //          │51│52│53│                          //          │6 │7 │8 │         
+        // ┌──┬──┬──┼──┼──┼──┼──┬──┬──┐                 // ┌──┬──┬──┼──┼──┼──┼──┬──┬──┐
+        // │27│28│29│0 │1 │2 │9 │10│11│                 // │29│32│35│36│37│38│15│12│9 │
+        // ├──┼──┼──┼──┼──┼──┼──┼──┼──┤                 // ├──┼──┼──┼──┼──┼──┼──┼──┼──┤
+        // │30│31│32│3 │4 |5 │12│13│14│                 // │28│31│34│39|40|41│16│13│10│
+        // ├──┼──┼──┼──┼──┼──┼──┼──┼──┤                 // ├──┼──┼──┼──┼──┼──┼──┼──┼──┤
+        // │33│34│35│6 │7 │8 │15│16│17│                 // │27│30│33│42│43│44│17│14│11│
+        // └──┴──┴──┼──┼──┼──┼──┴──┴──┘                 // └──┴──┴──┼──┼──┼──┼──┴──┴──┘
+        //          │36│37│38│                          //          │18│19│20│         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤         
+        //          │39│40│41│                          //          │21│22│23│         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤         
+        //          │42│43│44│                          //          │24│25│26│         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤         
+        //          │18│19│20│                          //          │45│46│47│         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤         
+        //          │21│22│23│                          //          │48│49│50│         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤         
+        //          │24│25│26│                          //          │51│52│53│         
+        //          └──┴──┴──┘                          //          └──┴──┴──┘         
+
+
+        //Y Move Permutation
+        //          ┌──┬──┬──┐                          //          ┌──┬──┬──┐         
+        //          │45│46│47│                          //          │51│48│45│         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤         
+        //          │48│49│50│                          //          │52│49│46│         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤      
+        //          │51│52│53│                          //          │53│50│47│          
+        // ┌──┬──┬──┼──┼──┼──┼──┬──┬──┐                 // ┌──┬──┬──┼──┼──┼──┼──┬──┬──┐
+        // │27│28│29│0 │1 │2 │9 │10│11│                 // │0 │1 │2 │9 │10│11│26│25│24│
+        // ├──┼──┼──┼──┼──┼──┼──┼──┼──┤                 // ├──┼──┼──┼──┼──┼──┼──┼──┼──┤
+        // │30│31│32│3 │4 |5 │12│13│14│                 // │3 │4 │5 │12│13|14│23│22│21│
+        // ├──┼──┼──┼──┼──┼──┼──┼──┼──┤                 // ├──┼──┼──┼──┼──┼──┼──┼──┼──┤
+        // │33│34│35│6 │7 │8 │15│16│17│                 // │6 │7 │8 │15│16│17│20│19│18│
+        // └──┴──┴──┼──┼──┼──┼──┴──┴──┘                 // └──┴──┴──┼──┼──┼──┼──┴──┴──┘
+        //          │36│37│38│                          //          │38│41│44│         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤         
+        //          │39│40│41│                          //          │37│40│43│         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤         
+        //          │42│43│44│                          //          │36│39│42│         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤         
+        //          │18│19│20│                          //          │35│34│33│         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤         
+        //          │21│22│23│                          //          │32│31│30│         
+        //          ├──┼──┼──┤                          //          ├──┼──┼──┤         
+        //          │24│25│26│                          //          │29│28│27│         
+        //          └──┴──┴──┘                          //          └──┴──┴──┘
+        //          
+
+
+
+        public BaseTensor<byte> Cube { get; internal set; }
 
         public RubiksCube() {
-            this.Cube = new IntTensor(new Shape(6, 3, 3), 0);
-            this.SetCubeFaces();
-        }
-
-
-        private void SetCubeFaces() {
-            for (int f = 0; f < RUBIK_FACES; f++) {
-                for (int x = 0; x < 3; x++) {
+            this.Cube = new ByteTensor(new Shape(6, 3, 3));
+            for (int f = 0; f < 6; f++) {
+                for (int x = 0;x < 3; x++) {
                     for (int y = 0; y < 3; y++) {
-                        this.Cube[f, x, y] = f + 1;
+                        this.Cube[f, y, x] = (byte)(f + 1);
                     }
                 }
             }
         }
 
-        public int GetFaceIndex(RubiksFace face) {
-            return ((int)face - 1) * 3 * 3;
+        public IEnumerable<RubiksMove> Scramble(int moves = 30) {
+            var random = new Random();
+            var allMoves = Enum.GetValues<RubiksMove>().ToList();
+            allMoves.Remove(RubiksMove.X);
+            allMoves.Remove(RubiksMove.Y);
+            allMoves.Remove(RubiksMove.Z); 
+            allMoves.Remove(RubiksMove._X);
+            allMoves.Remove(RubiksMove._Y);
+            allMoves.Remove(RubiksMove._Z);
+            for (int i = 0; i < moves; i++) {
+                var move = allMoves[random.Next(allMoves.Count)];
+                this.Move(move);
+                yield return move;
+            }
+        }
+
+        public void Move(RubiksMove move) {
+            Rubiks.Move.GetMove(move).Apply(this);
+        }
+
+        public IEnumerable<RubiksMove> Move(string sequence) {
+            RubiksMove[] moves = Rubiks.Move.Parse(sequence.ToUpper());
+            foreach (var move in moves) {
+                this.Move(move);
+                yield return move;
+            }
         }
 
         public int[] GetFace(RubiksFace face) {
@@ -37,55 +146,10 @@ namespace Rubiks {
             return faceValues.ToArray();
         }
 
-        private void RotateAxis90(int axis, bool vertical) {
-            Dictionary<int, int> swapIndices = new Dictionary<int, int>();
-
-            //TODO: Faces rotieren
-            if (!vertical) {
-                for (int i = 0; i < 3; i++) {
-                    swapIndices.Add(GetFaceIndex(RubiksFace.FRONT) + (axis * 3) + i, GetFaceIndex(RubiksFace.RIGHT) + (axis * 3) + i);
-                    swapIndices.Add(GetFaceIndex(RubiksFace.LEFT) + (axis * 3) + i, GetFaceIndex(RubiksFace.FRONT) + (axis * 3) + i);
-                    swapIndices.Add(GetFaceIndex(RubiksFace.BACK) + (axis * 3) + i, GetFaceIndex(RubiksFace.LEFT) + (axis * 3) + i);
-                    swapIndices.Add(GetFaceIndex(RubiksFace.RIGHT) + (axis * 3) + i, GetFaceIndex(RubiksFace.BACK) + (axis * 3) + i);
-                }
-            } else {
-                for (int i = 0; i < 3; i++) {
-                    swapIndices.Add(GetFaceIndex(RubiksFace.FRONT) + axis + (i * 3), GetFaceIndex(RubiksFace.DOWN) + axis + (i * 3));
-                    swapIndices.Add(GetFaceIndex(RubiksFace.UP) + axis + (i * 3), GetFaceIndex(RubiksFace.FRONT) + axis + (i * 3));
-                    swapIndices.Add(GetFaceIndex(RubiksFace.BACK) + axis + (i * 3), GetFaceIndex(RubiksFace.UP) + axis + (i * 3));
-                    swapIndices.Add(GetFaceIndex(RubiksFace.DOWN) + axis + (i * 3), GetFaceIndex(RubiksFace.BACK) + axis + (i * 3));
-                }
-            }
-
-            Dictionary<int, int> cache = new Dictionary<int, int>();
-            foreach (var kvp in swapIndices) {
-                if (!cache.ContainsKey(kvp.Key)) {
-                    cache.Add(kvp.Key, Cube.GetValue((long)kvp.Key));
-                }
-                if (!cache.ContainsKey(kvp.Value)) {
-                    cache.Add(kvp.Value, Cube.GetValue((long)kvp.Value));
-                }
-
-                Cube.SetValue(cache[kvp.Value], (long)kvp.Key);
-            }
-        }
-
-        public void MoveU() => RotateAxis90(0, false);
-        public void MoveD() => RotateAxis90(2, false);
-
-
-        public void MoveR() => RotateAxis90(2, true);
-
-        public void Move(RubiksMove move) {
-            switch (move) {
-                case RubiksMove.U: MoveU(); break;
-            }
-        }
-
         public bool IsSolved() {
             bool solved = true;
 
-            for (int f = 0; f < RUBIK_FACES; f++) {
+            for (int f = 0; f < 6; f++) {
                 var face = (RubiksFace)f + 1;
                 var values = GetFace(face);
                 if (values.Any(x => x != values[0])) {
