@@ -1,4 +1,8 @@
-﻿# Informatik Projekt Rubiks Cube
+﻿
+
+# Informatik Projekt Rubiks Cube
+
+~ Paul Sütterlin, 25.05.2022
 
 Der Code für den RubiksCube befindet sich in Rubiks\
 
