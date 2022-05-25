@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace TensorCS.Core {
-    public abstract class BaseTensor<T> where T : struct {
+    public abstract class BaseTensor<T> {
 
         public Shape Shape { get; private set; }
 
@@ -34,7 +34,7 @@ namespace TensorCS.Core {
 
         #region Operation
 
-        public BaseTensor<T> Add (BaseTensor<T> other) {
+        public BaseTensor<T> Plus (BaseTensor<T> other) {
             if (!this.Shape.Equals(other.Shape)) {
                 throw new ArgumentException("Other Tensor must be of the same shape");
             }
@@ -47,7 +47,7 @@ namespace TensorCS.Core {
             return result;
         }
 
-        public BaseTensor<T> Subtract(BaseTensor<T> other) {
+        public BaseTensor<T> Minus(BaseTensor<T> other) {
             if (!this.Shape.Equals(other.Shape)) {
                 throw new ArgumentException("Other Tensor must be of the same shape");
             }

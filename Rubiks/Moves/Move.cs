@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using TensorCS.Core;
 
-namespace Rubiks {
+namespace Rubiks.Moves {
     public class Move {
 
         private static Move U = new Move(new int[] { 9, 10, 11, 3, 4, 5, 6, 7, 8, 18, 19, 20, 12, 13, 14, 15, 16, 17, 27, 28, 29, 21, 22, 23, 24, 25, 26, 0, 1, 2, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 51, 48, 45, 52, 49, 46, 53, 50, 47 });
-        private static Move X = new Move(new int[] { 36, 37, 38, 39, 40, 41, 42, 43, 44, 15, 12, 9, 16, 13, 10, 17, 14, 11, 45, 46, 47, 48, 49, 50, 51, 52, 53, 29, 32, 35, 28, 31, 34, 27, 30, 33, 18, 19, 20, 21, 22, 23, 24, 25, 26, 0, 1, 2, 3, 4, 5, 6, 7, 8 });
-        private static Move Y = new Move(new int[] { 9, 10, 11, 12, 13, 14, 15, 16, 17, 26, 25, 24, 23, 22, 21, 20, 19, 18, 35, 34, 33, 32, 31, 30, 29, 28, 27, 0, 1, 2, 3, 4, 5, 6, 7, 8, 38, 41, 44, 37, 40, 43, 36, 39, 42, 51, 48, 45, 52, 49, 46, 53, 50, 47 });
+        private static Move X = new Move(new int[] { 36, 37, 38, 39, 40, 41, 42, 43, 44, 15, 12, 9, 16, 13, 10, 17, 14, 11, 53, 52, 51, 50, 49, 48, 47, 46, 45, 29, 32, 35, 28, 31, 34, 27, 30, 33, 26, 25, 24, 23, 22, 21, 20, 19, 18, 0, 1, 2, 3, 4, 5, 6, 7, 8 });
+        private static Move Y = new Move(new int[] { 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 0, 1, 2, 3, 4, 5, 6, 7, 8, 38, 41, 44, 37, 40, 43, 36, 39, 42, 51, 48, 45, 52, 49, 46, 53, 50, 47 });
         private static Move Z = new Move(new Move[] { X, Y, X, X, X });
         private static Move D = new Move(new Move[] { X, X, U, X, X });
         private static Move L = new Move(new Move[] { Z, U, Z, Z, Z });
@@ -94,61 +94,98 @@ namespace Rubiks {
             else return (RubiksMove)(val + 0x20);
         }
 
+        public static string ToString(RubiksMove move) {
+            var val = (int)move;
+            bool inverted = false;
+            if ((val & 0x20) == 0x20) {
+                move = Invert(move);
+                inverted = true;
+            }
+
+            var c = move switch {
+                RubiksMove.U => "U",
+                RubiksMove.D => "D",
+                RubiksMove.R => "R",
+                RubiksMove.L => "L",
+                RubiksMove.F => "F",
+                RubiksMove.B => "B",
+                RubiksMove.M => "M",
+                RubiksMove.E => "E",
+                RubiksMove.S => "S",
+
+                RubiksMove.Uw => "Uw",
+                RubiksMove.Dw => "Dw",
+                RubiksMove.Rw => "Rw",
+                RubiksMove.Lw => "Lw",
+                RubiksMove.Fw => "Fw",
+                RubiksMove.Bw => "Bw",
+
+                RubiksMove.X => "X",
+                RubiksMove.Y => "Y",
+                RubiksMove.Z => "Z",
+
+                RubiksMove._X => "x",
+                RubiksMove._Y => "y",
+                RubiksMove._Z => "z",
+            };
+            return inverted ? c + "'" : c;
+        }
+
+        public static string ToReadableString(RubiksMove[] moves) {
+
+            return String.Join(" ", moves.Select(x => ToString(x)));
+            
+
+        }
+
+        private static Token ReadNextToken(ref string input) {
+            string token = "";
+            int bracketCount = 0;
+            Stack<char> chars = new Stack<char>(input.Reverse());
+
+
+            while (chars.Count > 0) {
+                char c = chars.Pop();
+
+                switch (c) {
+                    case '(':
+                        bracketCount++;
+                        break;
+                    case ')':
+                        bracketCount--;
+                        break;
+                }
+
+                if (bracketCount < 0) throw new Exception("Invalid move sequence!");
+
+                token += c;
+                if (c == ' ') {
+                    if (bracketCount == 0) {
+                        break;
+                    }
+                }
+
+            }
+
+            input = input.Substring(token.Length);
+            return Token.Parse(token.Trim());
+        }
+
+        public static RubiksMove[] ParseWithSetupMove(string setup, string sequence) {
+            var setupMoves = Parse(setup);
+            var undoSetupMoves = setupMoves.Select(x => Invert(x)).Reverse();
+
+            var moves = Parse(sequence);
+            return new List<RubiksMove>(setupMoves).Concat(moves).Concat(undoSetupMoves).ToArray();
+        }
+
         public static RubiksMove[] Parse(string sequence) {
 
             List<RubiksMove> moves = new List<RubiksMove>();
-            Stack<char> chars = new Stack<char>(sequence.Reverse());
 
-            while (chars.Count > 0) {
-                char c;
-                string token = "";
-                while (chars.Count > 0 && (c = chars.Pop()) != ' ') {
-                    token += c;
-                }
-
-                if (string.IsNullOrEmpty(token)) continue;
-                if (token.Length >= 4) throw new NotSupportedException("Invalid token: " + token);
-
-                bool doubleMove = false;
-                bool invert = false;
-                if (token.Last() == '2') {
-                    // Double move
-                    doubleMove = true;
-                    token = token.Substring(0, token.Length - 1);
-                }
-
-                if (token.Last() == '\'') {
-                    // Invert move
-                    invert = true;
-                    token = token.Substring(0, token.Length - 1);
-                }
-
-                RubiksMove move = token switch {
-                    "U" => RubiksMove.U,
-                    "D" => RubiksMove.D,
-                    "R" => RubiksMove.R,
-                    "L" => RubiksMove.L,
-                    "F" => RubiksMove.F,
-                    "B" => RubiksMove.B,
-                    "M" => RubiksMove.M,
-                    "E" => RubiksMove.E,
-                    "S" => RubiksMove.S,
-                    "Rw" => RubiksMove.Rw,
-                    "Lw" => RubiksMove.Lw,
-                    "Uw" => RubiksMove.Uw,
-                    "Dw" => RubiksMove.Dw,
-                    "Fw" => RubiksMove.Fw,
-                    "Bw" => RubiksMove.Bw,
-                    "X" => RubiksMove.X,
-                    "Y" => RubiksMove.Y,
-                    "Z" => RubiksMove.Z,
-                    _ => throw new NotSupportedException($"Invalid token: '{token}' (double={doubleMove} inverted={invert})")
-                };
-
-                if (invert) move = Invert(move);
-
-                moves.Add(move);
-                if (doubleMove) moves.Add(move);
+            while (sequence.Length > 0) {
+                var token = ReadNextToken(ref sequence);
+                moves.AddRange(token.GetMoves());                
             }
 
             return moves.ToArray();

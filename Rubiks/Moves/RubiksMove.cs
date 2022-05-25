@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Rubiks {
+namespace Rubiks.Moves {
     public enum RubiksMove : byte {
 
         U = 1,
@@ -26,24 +26,24 @@ namespace Rubiks {
         Y = 17,
         Z = 18,
 
-        _U = 33,
-        _D = 34,
-        _R = 35,
-        _L = 36,
-        _F = 37,
-        _B = 38,
-        _M = 39,
-        _E = 40,
-        _S = 41,
-        _Rw = 42,
-        _Lw = 43,
-        _Uw = 44,
-        _Dw = 45,
-        _Fw = 46,
-        _Bw = 47,
-        _X = 48,
-        _Y = 49,
-        _Z = 50
+        _U = U + 32,
+        _D = D + 32,
+        _R = R + 32,
+        _L = L + 32,
+        _F = F + 32,
+        _B = B + 32,
+        _M = M + 32,
+        _E = E + 32,
+        _S = S + 32,
+        _Rw = Rw + 32,
+        _Lw = Lw + 32,
+        _Uw = Uw + 32,
+        _Dw = Dw + 32,
+        _Fw = Fw + 32,
+        _Bw = Bw + 32,
+        _X = X + 32,
+        _Y = Y + 32,
+        _Z = Z + 32
 
     }
 }

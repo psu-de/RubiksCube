@@ -66,4 +66,19 @@ namespace TensorCS.Core {
 
         internal override byte SubtractT(byte x, byte y) => (byte)(x - y);
     }
+
+    public class EnumTensor<TEnum> : BaseTensor<TEnum> where TEnum : Enum {
+        public EnumTensor(Shape shape) : base(shape) { }
+        public EnumTensor(Shape shape, TEnum initialValue) : base(shape, initialValue) { }
+        public EnumTensor(Shape shape, TEnum[] values) : base(shape, values) { }
+
+
+        internal override TEnum AddT(TEnum x, TEnum y) => throw new NotSupportedException();
+
+        internal override TEnum DivideT(TEnum x, TEnum y) => throw new NotSupportedException();
+
+        internal override TEnum MultiplyT(TEnum x, TEnum y) => throw new NotSupportedException();
+
+        internal override TEnum SubtractT(TEnum x, TEnum y) => throw new NotSupportedException();
+    }
 }

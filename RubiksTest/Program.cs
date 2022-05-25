@@ -1,15 +1,21 @@
 ﻿using Rubiks;
+using Rubiks.Moves;
+using Rubiks.Solver;
 using Spectre.Console;
 
+object _displayLock = new object();
 
 var cube = new RubiksCube();
-Canvas display = new Canvas(3 * 3 + 1, 4 * 3 + 1);
+Canvas display = new Canvas(4 * 3 + 1, 3 * 3 + 1);
+
 
 AnsiConsole.MarkupLine("Informatik Projekt");
 AnsiConsole.MarkupLine("Mögliche moves: " + String.Join(", ", Enum.GetNames(typeof(RubiksMove)).Select(x => !x.Contains('_') ? x : x.Replace("_", "") + "'")));
 AnsiConsole.MarkupLine("Bei jedem Input können beliebig viele Moves angegeben werden (durch Leerzeichen getrennt) oder: ");
 AnsiConsole.MarkupLine(" - [purple]scramble[/] um den Zauberwürfel zufällig zu verdrehen");
 AnsiConsole.MarkupLine(" - [red]exit[/] um das Programm zu verlassen");
+AnsiConsole.MarkupLine(" - [cyan1]reset[/] um den Würfel zu resetten.");
+AnsiConsole.MarkupLine(" - [green]solve[/] um den Würfel automatisch zu lösen (nicht vollständig)");
 AnsiConsole.WriteLine();
 AnsiConsole.WriteLine();
 AnsiConsole.WriteLine();
@@ -19,33 +25,67 @@ AnsiConsole.Write(display);
 
 while (true) {
 
-    var seq = AnsiConsole.Ask<string>("Move Sequenz: ");
+    try {
+        var seq = AnsiConsole.Ask<string>("Move Sequenz: ");
 
-    if (seq == "exit") {
-        Environment.Exit(0);
-    }
-
-
-    AnsiConsole.Live(display).Start(ctx => {
-
-        if (seq == "scramble") {
-            foreach (var move in cube.Scramble()) {
+        if (seq == "exit") {
+            Environment.Exit(0);
+        }
+        if (seq == "reset") {
+            cube = new RubiksCube();
+            lock (_displayLock) {
                 DisplayRubiks(cube);
-                ctx.Refresh();
-                Task.Delay(350).Wait();
+                AnsiConsole.Write(display);
             }
-        } else {
-            foreach (var move in cube.Move(seq)) {
-                DisplayRubiks(cube);
-                ctx.Refresh();
-                Task.Delay(350).Wait();
-            }
+            continue;
         }
 
-    });
 
-    AnsiConsole.WriteLine("Gelöst: " + cube.IsSolved());
+        AnsiConsole.Live(display).Start(ctx => {
 
+            switch (seq) {
+                case "scramble":
+                    foreach (var move in cube.Scramble()) {
+                        lock (_displayLock) {
+                            DisplayRubiks(cube);
+                            ctx.Refresh();
+                        }
+                        Task.Delay(100).Wait();
+                    }
+                    break;
+                case "solve":
+                    Solver solv = new PsuSolver(cube);
+                    List<RubiksMove> moves = new List<RubiksMove>();
+                    foreach (var move in solv.Solve()) {
+                        moves.Add(move);
+                        lock (_displayLock) {
+                            DisplayRubiks(cube);
+                            ctx.Refresh();
+                        }
+                        Task.Delay(100).Wait();
+                    }
+                    AnsiConsole.WriteLine(Move.ToReadableString(moves.ToArray()));
+                    break;
+                default:
+                    foreach (var move in cube.Move(seq)) {
+                        lock (_displayLock) {
+                            DisplayRubiks(cube);
+                            ctx.Refresh();
+                        }
+                        Task.Delay(350).Wait();
+                    }
+                    break;
+            }
+
+        });
+
+        AnsiConsole.WriteLine("Gelöst: " + cube.IsSolved());
+    } catch (Exception ex) {
+
+        AnsiConsole.MarkupLine("[red] Error: [/]");
+        AnsiConsole.WriteException(ex);
+
+    }
 }
 
 
@@ -54,17 +94,16 @@ Console.ReadLine();
 
 void DisplayRubiks(RubiksCube cube) {
 
-    Spectre.Console.Color GetColor(int val) {
-        switch (val) {
-            case 1: return Color.White;
-            case 2: return Color.Red;
-            case 3: return Color.Yellow1;
-            case 4: return Color.Orange1;
-            case 5: return Color.Green;
-            case 6: return Color.Blue;
-            case 7: return Color.Magenta1;
+    Spectre.Console.Color GetColor(RubiksColor color) {
+        switch (color) {
+            case RubiksColor.White: return Color.White;
+            case RubiksColor.Red: return Color.Red;
+            case RubiksColor.Yellow: return Color.Yellow1;
+            case RubiksColor.Orange: return Color.Orange1;
+            case RubiksColor.Green: return Color.Green;
+            case RubiksColor.Blue: return Color.Blue;
 
-            default: throw new NotSupportedException();
+            default: return Color.Magenta1;
         }
     }
 
@@ -76,11 +115,11 @@ void DisplayRubiks(RubiksCube cube) {
             }
         }
     }
-
     SetFacePixels(RubiksFace.UP, 3, 0);
     SetFacePixels(RubiksFace.LEFT, 0, 3);
     SetFacePixels(RubiksFace.FRONT, 3, 3);
     SetFacePixels(RubiksFace.RIGHT, 6, 3);
+    SetFacePixels(RubiksFace.BACK, 9, 3);
     SetFacePixels(RubiksFace.DOWN, 3, 6);
-    SetFacePixels(RubiksFace.BACK, 3, 9);
+
 }
