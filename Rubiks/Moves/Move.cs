@@ -47,6 +47,12 @@ namespace Rubiks.Moves {
         private static Move _Uw = new Move(new Move[] { Uw, Uw, Uw });
         private static Move _Dw = new Move(new Move[] { Dw, Dw, Dw });
 
+        /// <summary>
+        /// Gibt den entsprechenden <see cref="Move"/> für ein <see cref="RubiksMove"/> zurück
+        /// </summary>
+        /// <param name="move"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException">Falls <paramref name="move"/> nicht implementiert ist</exception>
         public static Move GetMove(RubiksMove move) => move switch {
             RubiksMove.U => U,
             RubiksMove.D => D,
@@ -87,6 +93,11 @@ namespace Rubiks.Moves {
             _ => throw new NotImplementedException()
         };
 
+        /// <summary>
+        /// Gibt den invertierten <see cref="RubiksMove"/> zurück
+        /// </summary>
+        /// <param name="move"></param>
+        /// <returns></returns>
         public static RubiksMove Invert(RubiksMove move) {
             int val = (int)move;
 
@@ -94,6 +105,11 @@ namespace Rubiks.Moves {
             else return (RubiksMove)(val + 0x20);
         }
 
+        /// <summary>
+        /// Gibt einen string für <paramref name="move"/> zurück
+        /// </summary>
+        /// <param name="move"></param>
+        /// <returns></returns>
         public static string ToString(RubiksMove move) {
             var val = (int)move;
             bool inverted = false;
@@ -131,6 +147,11 @@ namespace Rubiks.Moves {
             return inverted ? c + "'" : c;
         }
 
+        /// <summary>
+        /// Gibt eine Zugsequenz als String für <paramref name="moves"/> zurück
+        /// </summary>
+        /// <param name="moves"></param>
+        /// <returns></returns>
         public static string ToReadableString(RubiksMove[] moves) {
 
             return String.Join(" ", moves.Select(x => ToString(x)));
@@ -171,6 +192,12 @@ namespace Rubiks.Moves {
             return Token.Parse(token.Trim());
         }
 
+        /// <summary>
+        /// Parsed eine Zugsequenz mit einem <paramref name="setup"/> move
+        /// </summary>
+        /// <param name="setup">Eine Zugsequenz die vor der <paramref name="sequence"/> ausgeführt wird und danach wieder rückgängig gemacht wird</param>
+        /// <param name="sequence">Zugsequenz zum ausführen</param>
+        /// <returns>Zugsequenz als <see cref="RubiksMove[]"/> mit setup move</returns>
         public static RubiksMove[] ParseWithSetupMove(string setup, string sequence) {
             var setupMoves = Parse(setup);
             var undoSetupMoves = setupMoves.Select(x => Invert(x)).Reverse();
@@ -179,6 +206,11 @@ namespace Rubiks.Moves {
             return new List<RubiksMove>(setupMoves).Concat(moves).Concat(undoSetupMoves).ToArray();
         }
 
+        /// <summary>
+        /// Parsed eine Zugsequenz
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <returns>Zugsequenz als <see cref="RubiksMove[]"/></returns>
         public static RubiksMove[] Parse(string sequence) {
 
             List<RubiksMove> moves = new List<RubiksMove>();
@@ -191,33 +223,50 @@ namespace Rubiks.Moves {
             return moves.ToArray();
         }
 
-        private int[]? Permutation;
-        private Move[]? OtherMoves;
+        private int[] Permutation;
 
+        /// <summary>
+        /// Erstellt einen neuen Move über ein permutation array
+        /// </summary>
+        /// <param name="permutation"></param>
         public Move(int[] permutation) {
             this.Permutation = permutation;
         }
 
+
+        /// <summary>
+        /// Erstellt einen neuen Move über andere Moves und berechnet die pemutation array
+        /// </summary>
+        /// <param name="otherMoves"></param>
         public Move(Move[] otherMoves) {
-            this.OtherMoves = otherMoves;
+            // Jeden move als permutation speichern, ~12x schneller
+            var shape = new Shape(6, RubiksCube.FaceLength, RubiksCube.FaceLength);
+            BaseTensor<int> tensor = new IntTensor(shape, Enumerable.Range(0, (int)shape.Total).ToArray());
+
+            foreach (var move in otherMoves) {
+                var clone = tensor.Clone();
+                for (long i = 0; i < move.Permutation.Length; i++) {
+                    clone.SetValue(tensor[(long)move.Permutation[i]], i);
+                }
+                tensor = clone;
+            }
+
+            this.Permutation = tensor.GetValues();
         }
 
 
+        /// <summary>
+        /// Wendet den <see cref="Move"/> auf den <paramref name="cube"/> an
+        /// </summary>
+        /// <param name="cube"></param>
         public void Apply(RubiksCube cube) {
-            if (Permutation != null) {
 
-                var oldCube = cube.Data;
-                var newCube = cube.Data.Clone();
-                for (long i = 0; i < Permutation.Length; i++) {
-                    newCube.SetValue(oldCube[(long)this.Permutation[i]], i);
-                }
-                cube.Data = newCube;
-
-            } else if (OtherMoves != null) {
-                foreach (var move in OtherMoves) {
-                    move.Apply(cube);
-                }
+            var oldCube = cube.Data;
+            var newCube = cube.Data.Clone();
+            for (long i = 0; i < Permutation.Length; i++) {
+                newCube.SetValue(oldCube[(long)this.Permutation[i]], i);
             }
+            cube.Data = newCube;
         }
     }
 }

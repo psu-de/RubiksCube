@@ -2,12 +2,24 @@
 using Rubiks.Moves;
 using Rubiks.Solver;
 using Spectre.Console;
+using System.Diagnostics;
 
 object _displayLock = new object();
 
 var cube = new RubiksCube();
 Canvas display = new Canvas(4 * 3 + 1, 3 * 3 + 1);
 
+var sw = Stopwatch.StartNew();
+for (int i = 0; i < 100; i++) {
+
+    cube.Scramble().ToArray();
+    var solver = new OldHoffmanSolver(cube);
+    var moves = solver.Solve().ToArray();
+    System.Diagnostics.Debug.Assert(cube.IsSolved());
+    System.Diagnostics.Debug.WriteLine($"Cube solved in {moves.Length} moves");
+}
+sw.Stop();
+System.Diagnostics.Debug.WriteLine($"100 Cubes solved in {sw.ElapsedMilliseconds}ms");
 
 AnsiConsole.MarkupLine("Informatik Projekt");
 AnsiConsole.MarkupLine("Mögliche moves: " + String.Join(", ", Enum.GetNames(typeof(RubiksMove)).Select(x => !x.Contains('_') ? x : x.Replace("_", "") + "'")));
@@ -15,7 +27,7 @@ AnsiConsole.MarkupLine("Bei jedem Input können beliebig viele Moves angegeben w
 AnsiConsole.MarkupLine(" - [purple]scramble[/] um den Zauberwürfel zufällig zu verdrehen");
 AnsiConsole.MarkupLine(" - [red]exit[/] um das Programm zu verlassen");
 AnsiConsole.MarkupLine(" - [cyan1]reset[/] um den Würfel zu resetten.");
-AnsiConsole.MarkupLine(" - [green]solve[/] um den Würfel automatisch zu lösen (nicht vollständig)");
+AnsiConsole.MarkupLine(" - [green]solve[/] um den Würfel automatisch zu lösen (Old Hoffmann Methode)");
 AnsiConsole.WriteLine();
 AnsiConsole.WriteLine();
 AnsiConsole.WriteLine();
@@ -50,11 +62,11 @@ while (true) {
                             DisplayRubiks(cube);
                             ctx.Refresh();
                         }
-                        Task.Delay(100).Wait();
+                        Task.Delay(20).Wait();
                     }
                     break;
                 case "solve":
-                    Solver solv = new PsuSolver(cube);
+                    Solver solv = new OldHoffmanSolver(cube);
                     List<RubiksMove> moves = new List<RubiksMove>();
                     foreach (var move in solv.Solve()) {
                         moves.Add(move);
@@ -62,7 +74,7 @@ while (true) {
                             DisplayRubiks(cube);
                             ctx.Refresh();
                         }
-                        Task.Delay(100).Wait();
+                        Task.Delay(1).Wait();
                     }
                     AnsiConsole.WriteLine(Move.ToReadableString(moves.ToArray()));
                     break;
@@ -72,7 +84,7 @@ while (true) {
                             DisplayRubiks(cube);
                             ctx.Refresh();
                         }
-                        Task.Delay(350).Wait();
+                        Task.Delay(50).Wait();
                     }
                     break;
             }

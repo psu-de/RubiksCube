@@ -79,10 +79,19 @@ namespace Rubiks {
         //           ║42│43│44║                          //          ║36│39│42║         
         //           ╚══╩══╩══╝                          //          ╚══╩══╩══╝         
 
+        /// <summary>
+        /// Seitenlänge einer Seite auf dem RubiksCube (hier 3x3)
+        /// </summary>
         public const int FaceLength = 3;
 
+        /// <summary>
+        /// Hält die aktuellen Farben pro Index, Shape=(6 x <see cref="FaceLength"/> x <see cref="FaceLength"/>)
+        /// </summary>
         public BaseTensor<RubiksColor> Data { get; internal set; }
 
+        /// <summary>
+        /// Erstellt einen neuen RubiksCube im gelösten Zustand
+        /// </summary>
         public RubiksCube() {
             this.Data = new EnumTensor<RubiksColor>(new Shape(6, FaceLength, FaceLength));
             RubiksColor[] faceColors = new RubiksColor[6] { RubiksColor.Green, RubiksColor.Red, RubiksColor.Blue, RubiksColor.Orange, RubiksColor.Yellow, RubiksColor.White };    
@@ -97,6 +106,12 @@ namespace Rubiks {
             }
         }
 
+
+        /// <summary>
+        /// Vermischt den Zauberwürfel durch drehen mit zufälligen Zügen
+        /// </summary>
+        /// <param name="moves">Anzahl der Züge zum vermiscchen</param>
+        /// <returns>Ein IEnumerable mit den Zügen zum vermischen</returns>
         public IEnumerable<RubiksMove> Scramble(int moves = 30) {
             var random = new Random();
             var allMoves = Enum.GetValues<RubiksMove>().ToList();
@@ -113,10 +128,19 @@ namespace Rubiks {
             }
         }
 
+        /// <summary>
+        /// Führt einen Zug aus
+        /// </summary>
+        /// <param name="move">Zug zum ausführen</param>
         public void Move(RubiksMove move) {
             Rubiks.Moves.Move.GetMove(move).Apply(this);
         }
 
+        /// <summary>
+        /// Parsed und führt eine Sequenz an Zügen aus
+        /// </summary>
+        /// <param name="sequence">Zugsequenz zum ausführen</param>
+        /// <returns>Ein IEnumerable mit allen Zügen der Zugsequenz</returns>
         public IEnumerable<RubiksMove> Move(string sequence) {
             RubiksMove[] moves = Rubiks.Moves.Move.Parse(sequence);
             foreach (var move in moves) {
@@ -125,16 +149,25 @@ namespace Rubiks {
             }
         }
 
+        /// <summary>
+        /// Gibt die aktuellen Farben auf einer Seite des Würfels zurück
+        /// </summary>
+        /// <param name="face">Seite auf dem Würfel</param>
+        /// <returns>Ein Array der Länge <see cref="FaceLength"/> * <see cref="FaceLength"/></returns>
         public RubiksColor[] GetFace(RubiksFace face) {
             List<RubiksColor> faceValues = new List<RubiksColor>();
-            for (int x = 0; x < 3; x++) {
-                for (int y = 0; y < 3; y++) {
+            for (int x = 0; x < FaceLength; x++) {
+                for (int y = 0; y < FaceLength; y++) {
                     faceValues.Add(this.Data[(int)face - 1, x, y]);
                 }
             }
             return faceValues.ToArray();
         }
 
+        /// <summary>
+        /// Gibt zurück ob der Würfel gelöst ist
+        /// </summary>
+        /// <returns></returns>
         public bool IsSolved() {
             bool solved = true;
 

@@ -74,6 +74,8 @@ Außerdem sind Klammern unterstützt:
 
 # Konsolenanwendung
 
+Zum formatieren und ausgeben in der Konsole wird Spectre.Console verwendet (https://spectreconsole.net)
+
 Der Rubikscube wird als Würfelnetz dargestellt. \
 Der Command solve funktioniert noch nicht. \
 
